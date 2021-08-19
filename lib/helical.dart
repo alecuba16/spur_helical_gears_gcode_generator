@@ -115,8 +115,14 @@ class Helical {
     if (this.gearStyle == GearStyle.spur) {
       this.calculatedToothAngle = 0;
     } else {
-      this.calculatedToothAngle = this.getToothAngle(this.pitchDiameter,
-          this.gearWidth + 2 * this.leadInOut, this.helicalAngle);
+      this.calculatedToothAngle = this.getToothAngle(
+          this.pitchDiameter,
+          this.gearWidth + 2 * this.leadInOut,
+          this.helicalAngle *
+              (helicalGearRotationDirection ==
+                      HelicalGearRotationDirection.leftHand
+                  ? -1
+                  : 1));
     }
 
     String gcode = "(Spur/helical Gear g-code generator)\n";
