@@ -17,13 +17,12 @@ class Helical {
   double cutterDiameter = 8;
   var helicalGearRotationDirection = HelicalGearRotationDirection.rightHand;
   double helicalAngle = 90;
-  double roughingStepDown = 10;
-  double finishingStepDown = 0;
+  int millingToothDepthSteps = 2;
   int cutFrom = 1;
   double safetyDistance = 3;
   double feedRate = 50;
   double seekRate = 200;
-  double leadInOut = 0;
+  double leadInOutOfTool = 0;
   double calculatedToothAngle = 90;
 
   gcodeSeek(arrayMovements) {
@@ -36,7 +35,7 @@ class Helical {
     return "G00 " +
         concatenate.toString() +
         " F" +
-        this.seekRate.toStringAsFixed(0) +
+        seekRate.toStringAsFixed(0) +
         "\n";
   }
 
@@ -50,75 +49,67 @@ class Helical {
     return "G01 " +
         concatenate.toString() +
         " F" +
-        this.feedRate.toStringAsFixed(0) +
+        feedRate.toStringAsFixed(0) +
         "\n";
   }
 
-  String tooth2g(int toothNumber, {depth}) {
-    if (depth == null) {
-      depth = this.toothDepth;
-    }
+  String calculateToothGcode(
+      int toothNumber, double depth, int step, int totalSteps) {
     var s = "(TOOTH " +
         (toothNumber + 1).toString() +
         "/" +
-        this.toothCount.toString() +
+        toothCount.toString() +
+        ((totalSteps > 1)
+            ? (", step " + step.toString() + "/" + totalSteps.toString())
+            : "") +
         ", depth:" +
-        depth.toString() +
+        depth.toStringAsFixed(3) +
         ")\n";
 
-    double y0 = ((this.outsideDiameter + this.cutterDiameter) / 2);
-    double a0 = 360 / this.toothCount * toothNumber;
+    double y0 = ((outsideDiameter + cutterDiameter) / 2);
+    double a0 = 360 / toothCount * toothNumber;
 
-    var spindleAxis = this.workingAxis == WorkingAxis.XA ? "Z" : "X";
-    var xAxis = (this.workingAxis == WorkingAxis.XA) ? 'X' : 'Z';
-    var xAxisMayInvert = (this.workingAxis == WorkingAxis.XA) ? 1 : -1;
+    var spindleAxis = workingAxis == WorkingAxis.XA ? "Z" : "X";
+    var xAxis = (workingAxis == WorkingAxis.XA) ? 'X' : 'Z';
+    var xAxisMayInvert = (workingAxis == WorkingAxis.XA) ? 1 : -1;
     // go to safety distance
     s += gcodeSeek([
-      {
-        spindleAxis:
-            ((y0 + this.safetyDistance) * this.cutFrom).toStringAsFixed(3)
-      }
+      {spindleAxis: ((y0 + safetyDistance) * cutFrom).toStringAsFixed(3)}
     ]);
 
     s += gcodeSeek([
-      {xAxis: (xAxisMayInvert * -this.leadInOut).toStringAsFixed(3)},
-      {'A': (a0 * this.cutFrom).toStringAsFixed(3)},
+      {xAxis: (xAxisMayInvert * -leadInOutOfTool).toStringAsFixed(3)},
+      {'A': (a0 * cutFrom).toStringAsFixed(3)},
     ]);
 
     s += gcodeSeek([
-      {spindleAxis: ((y0 - depth) * this.cutFrom).toStringAsFixed(3)},
+      {spindleAxis: ((y0 - depth) * cutFrom).toStringAsFixed(3)},
     ]);
 
     s += gcodeFeed([
       {
-        xAxis: (xAxisMayInvert * (this.gearWidth + this.leadInOut))
-            .toStringAsFixed(3)
+        xAxis:
+            (xAxisMayInvert * (gearWidth + leadInOutOfTool)).toStringAsFixed(3)
       },
-      {
-        'A':
-            ((a0 + this.calculatedToothAngle) * this.cutFrom).toStringAsFixed(3)
-      },
+      {'A': ((a0 + calculatedToothAngle) * cutFrom).toStringAsFixed(3)},
     ]);
 
     s += gcodeSeek([
-      {
-        spindleAxis:
-            ((y0 + this.safetyDistance) * this.cutFrom).toStringAsFixed(3)
-      }
+      {spindleAxis: ((y0 + safetyDistance) * cutFrom).toStringAsFixed(3)}
     ]);
     return s;
   }
 
-  gcode() {
-    this.leadInOut = this.getLeadInOut(this.cutterDiameter, this.toothDepth);
+  generateGcode() {
+    leadInOutOfTool = calculateLeadInOutOfTool(cutterDiameter, toothDepth);
 
-    if (this.gearStyle == GearStyle.spur) {
-      this.calculatedToothAngle = 0;
+    if (gearStyle == GearStyle.spur) {
+      calculatedToothAngle = 0;
     } else {
-      this.calculatedToothAngle = this.getToothAngle(
-          this.pitchDiameter,
-          this.gearWidth + 2 * this.leadInOut,
-          this.helicalAngle *
+      calculatedToothAngle = calculateToothAngle(
+          pitchDiameter,
+          gearWidth + 2 * leadInOutOfTool,
+          helicalAngle *
               (helicalGearRotationDirection ==
                       HelicalGearRotationDirection.leftHand
                   ? -1
@@ -126,60 +117,55 @@ class Helical {
     }
 
     String gcode = "(Spur/helical Gear g-code generator)\n";
-    gcode += "(author Alejandro Blanco <alecuba16@gmail.com)\n";
+    gcode += "(code by Alejandro Blanco <alecuba16@gmail.com)\n";
+    gcode +=
+        "(Warning test in-the-air without the milling tool to be sure that doesn't break anything)\n";
     gcode += "\n";
 
-    // setup everything
-    //gcode += "G17 (XY plane)\n";
-
-    gcode += this.units == Units.metric
+    gcode += units == Units.metric
         ? "G21 (Coordinates in millimeters)\n"
         : "G20 (Coordinates in  Imperial, inch)\n";
-    gcode += "G90 (Absolute coordinates mode)\n";
     gcode += "G40 (Cancel cutter radius compensation)\n";
     gcode += "G49 (Cancel cutter length offset)\n";
+    gcode += "G90 (Absolute coordinates mode)\n";
     gcode += "G98 (Retract to initial Z)\n";
     gcode += "G0 " +
-        this.seekRate.toStringAsFixed(0) +
+        seekRate.toStringAsFixed(0) +
         " (Seek rate set to " +
-        this.seekRate.toStringAsFixed(0) +
+        seekRate.toStringAsFixed(0) +
         ")\n";
     gcode += "G1 " +
-        this.feedRate.toStringAsFixed(0) +
+        feedRate.toStringAsFixed(0) +
         " (Feed rate set to " +
-        this.feedRate.toStringAsFixed(0) +
+        feedRate.toStringAsFixed(0) +
         ")\n";
     gcode += "\n";
     gcode += "M3 (Spindle start)\n";
     gcode += "G4 P4000 (Wait 4 seconds for the spindle start)\n";
     gcode += "\n";
 
-    int tooth;
-    double depth = 0;
-    //double other_steps=0;
-    double totalRoughingDepth;
-    for (tooth = 0; tooth < this.toothCount; tooth++) {
+    int currentTooth;
+    double acummDepth;
+    double stepDepth =
+        (toothDepth / millingToothDepthSteps * 1000).floor() / 1000;
+    int step;
+    for (currentTooth = 0; currentTooth < toothCount; currentTooth++) {
       gcode += "\n";
-      depth = 0;
-      totalRoughingDepth = this.toothDepth - this.finishingStepDown;
-      while (depth < totalRoughingDepth) {
-        if ((depth + this.roughingStepDown) < totalRoughingDepth) {
-          depth += this.roughingStepDown;
-          gcode += tooth2g(tooth, depth: depth);
+      acummDepth = 0;
+      step = 1;
+      while (acummDepth < toothDepth) {
+        if ((acummDepth + stepDepth) < toothDepth) {
+          acummDepth += stepDepth;
+          gcode += calculateToothGcode(
+              currentTooth, acummDepth, step, millingToothDepthSteps);
         } else {
-          depth = totalRoughingDepth;
-          gcode += this.tooth2g(tooth, depth: totalRoughingDepth);
+          acummDepth = toothDepth;
+          gcode += calculateToothGcode(
+              currentTooth, acummDepth, step, millingToothDepthSteps);
         }
-      }
-
-      //other_steps = totalRoughingDepth / this.roughingStepDown;
-
-      // Do finishing cut only if it is significant.
-      if ((this.finishingStepDown.abs()) > 0.001) {
-        gcode += this.tooth2g(tooth, depth: null);
+        step++;
       }
     }
-
     gcode += "\n";
     gcode += "M5 (Stop spindle)\n";
     gcode += "M2 (End program)\n";
@@ -187,20 +173,20 @@ class Helical {
     return gcode;
   }
 
-  getLeadInOut(cutterDiameter, toothDepth) {
+  calculateLeadInOutOfTool(cutterDiameter, toothDepth) {
     return math.sqrt((cutterDiameter * toothDepth) - math.pow(toothDepth, 2));
   }
 
   double deg2rad(double deg) => deg * (math.pi / 180.0);
   double rad2deg(double rad) => rad * (180.0 / math.pi);
 
-  getToothAngle(pitchDiameter, width, angle) {
-    double absAngle = angle.abs();
-    double otherAngle = 90 - absAngle;
-    double tmp1 = math.sin(deg2rad(otherAngle)) / width;
-    double angleLenght = math.sin(deg2rad(absAngle)) / tmp1;
+  calculateToothAngle(pitchDiameter, gearWidth, helixAngle) {
+    double angleAbsoluteValue = helixAngle.abs();
+    double complementaryAngle = 90 - angleAbsoluteValue;
+    double tmp = math.sin(deg2rad(complementaryAngle)) / gearWidth;
+    double angleLenght = math.sin(deg2rad(angleAbsoluteValue)) / tmp;
     double circleLenght = math.pi * pitchDiameter;
     double toothAngle = (360 / circleLenght) * angleLenght;
-    return (angle < 0) ? -toothAngle : toothAngle;
+    return (helixAngle < 0) ? -toothAngle : toothAngle;
   }
 }

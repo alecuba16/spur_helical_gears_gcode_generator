@@ -530,31 +530,6 @@ class AppBodyState extends State<AppBody> {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Flexible(
-                    child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                        child: Column(children: <Widget>[
-                          TextFormField(
-                              initialValue: helical.cutterDiameter.toString(),
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "Cutter tool diameter" +
-                                    (Units.metric == helical.units
-                                        ? " (mm)"
-                                        : " (inch)"),
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d+\.?\d{0,6}')),
-                              ],
-                              onChanged: (val) {
-                                setState(() {
-                                  helical.cutterDiameter = double.parse(val);
-                                  generatedGcodeData = "";
-                                });
-                              })
-                        ]))),
                 Padding(
                     padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
                     child: Text(
@@ -607,6 +582,58 @@ class AppBodyState extends State<AppBody> {
                             )
                           ]))
                     ])),
+                Flexible(
+                    child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                        child: Column(children: <Widget>[
+                          TextFormField(
+                              initialValue: helical.cutterDiameter.toString(),
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: "Cutter tool diameter" +
+                                    (Units.metric == helical.units
+                                        ? " (mm)"
+                                        : " (inch)"),
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d+\.?\d{0,6}')),
+                              ],
+                              onChanged: (val) {
+                                setState(() {
+                                  helical.cutterDiameter = double.parse(val);
+                                  generatedGcodeData = "";
+                                });
+                              })
+                        ]))),
+                Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    child: Text(
+                      'Tooth milling steps (toot depth in N passes):',
+                      style: new TextStyle(fontSize: 15.0),
+                    )),
+                Flexible(
+                    child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                        child: Column(children: <Widget>[
+                          DropdownButton(
+                              items: List<int>.generate(10, (i) => i + 1)
+                                  .map((int value) {
+                                return DropdownMenuItem<int>(
+                                  value: value,
+                                  child: new Text(value.toString()),
+                                );
+                              }).toList(),
+                              value: helical.millingToothDepthSteps,
+                              onChanged: (val) {
+                                setState(() {
+                                  helical.millingToothDepthSteps =
+                                      int.parse(val.toString());
+                                });
+                              })
+                        ]))),
                 if (helical.gearStyle == GearStyle.helical)
                   Flexible(
                       child: Padding(
@@ -675,7 +702,7 @@ class AppBodyState extends State<AppBody> {
                       onPressed: () {
                         // Validate returns true if the form is valid, or false otherwise.
                         setState(() {
-                          generatedGcodeData = helical.gcode();
+                          generatedGcodeData = helical.generateGcode();
                         });
                         // If the form is valid, display a snackbar. In the real world,
                         // you'd often call a server or save the information in a database.
