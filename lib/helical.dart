@@ -10,13 +10,13 @@ class Helical {
   var workingAxis = WorkingAxis.XA;
   var units = Units.metric;
   double outsideDiameter = 50;
-  double pitchDiameter = 15;
-  int toothCount = 5;
   double toothDepth = 5;
+  int toothCount = 5;
+  double pitchDiameter = 5 / ((5 + 2) / 50);
   double gearWidth = 10;
   double cutterDiameter = 8;
   var helicalGearRotationDirection = HelicalGearRotationDirection.rightHand;
-  double helicalAngle = 90;
+  double leadAngle = 90;
   int millingToothDepthSteps = 2;
   int cutFrom = 1;
   double safetyDistance = 3;
@@ -66,12 +66,16 @@ class Helical {
         depth.toStringAsFixed(3) +
         ")\n";
 
-    double y0 = ((outsideDiameter + cutterDiameter) / 2);
+    //Zero from the middle of the gear
+    //double y0 = ((outsideDiameter + cutterDiameter) / 2);
+    //Zero from the top of the gear
+    double y0 = ((outsideDiameter + cutterDiameter));
     double a0 = 360 / toothCount * toothNumber;
 
     var spindleAxis = workingAxis == WorkingAxis.XA ? "Z" : "X";
     var xAxis = (workingAxis == WorkingAxis.XA) ? 'X' : 'Z';
     var xAxisMayInvert = (workingAxis == WorkingAxis.XA) ? 1 : -1;
+    var aAxis = (workingAxis == WorkingAxis.XA) ? 'A' : 'B';
     // go to safety distance
     s += gcodeSeek([
       {spindleAxis: ((y0 + safetyDistance) * cutFrom).toStringAsFixed(3)}
@@ -79,7 +83,7 @@ class Helical {
 
     s += gcodeSeek([
       {xAxis: (xAxisMayInvert * -leadInOutOfTool).toStringAsFixed(3)},
-      {'A': (a0 * cutFrom).toStringAsFixed(3)},
+      {aAxis: (a0 * cutFrom).toStringAsFixed(3)},
     ]);
 
     s += gcodeSeek([
@@ -91,7 +95,7 @@ class Helical {
         xAxis:
             (xAxisMayInvert * (gearWidth + leadInOutOfTool)).toStringAsFixed(3)
       },
-      {'A': ((a0 + calculatedToothAngle) * cutFrom).toStringAsFixed(3)},
+      {aAxis: ((a0 + calculatedToothAngle) * cutFrom).toStringAsFixed(3)},
     ]);
 
     s += gcodeSeek([
@@ -100,20 +104,44 @@ class Helical {
     return s;
   }
 
+  double calculatePitchDiameter(outsideDiameter, numberOfTooths) {
+    /* Pitch diameter (D) defined by:
+    https://www.bostongear.com/-/media/Files/Literature/Brand/boston-gear/catalogs/p-1930-bg-sections/p-1930-bg_engineering-info-spur-gears.ashx
+    Number of Teeth(N) & Diametral Pitch(P)
+    D=N/P
+    
+    Diametral pitch(P) is given approx by Number of tooths and Outside diameter (Do)
+    P=(N+2)/Do
+    */
+    double diametralPitch = (numberOfTooths + 2) / outsideDiameter;
+    double pitchDiameterD = numberOfTooths / diametralPitch;
+    return pitchDiameterD;
+  }
+
   generateGcode() {
     leadInOutOfTool = calculateLeadInOutOfTool(cutterDiameter, toothDepth);
+    double helixAngle = (90 - leadAngle).abs();
+    /* Pitch diameter (D) defined by:
+    https://www.bostongear.com/-/media/Files/Literature/Brand/boston-gear/catalogs/p-1930-bg-sections/p-1930-bg_engineering-info-spur-gears.ashx
+    Number of Teeth(N) & Diametral Pitch(P)
+    D=N/P
+    
+    Diametral pitch(P) is given approx by Number of tooths and Outside diameter (Do)
+    P=(N+2)/Do
+    */
+    pitchDiameter = calculatePitchDiameter(outsideDiameter, toothCount);
 
-    if (gearStyle == GearStyle.spur) {
-      calculatedToothAngle = 0;
-    } else {
+    if (gearStyle == GearStyle.helical) {
       calculatedToothAngle = calculateToothAngle(
           pitchDiameter,
           gearWidth + 2 * leadInOutOfTool,
-          helicalAngle *
+          helixAngle *
               (helicalGearRotationDirection ==
                       HelicalGearRotationDirection.leftHand
                   ? -1
                   : 1));
+    } else {
+      calculatedToothAngle = 0;
     }
 
     String gcode = "(Spur/helical Gear g-code generator)\n";
