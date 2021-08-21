@@ -14,7 +14,7 @@ class Helical {
   int toothCount = 5;
   double pitchDiameter = 5 / ((5 + 2) / 50);
   double gearWidth = 10;
-  double cutterDiameter = 8;
+  double cutterDiameter = 1;
   var helicalGearRotationDirection = HelicalGearRotationDirection.rightHand;
   double leadAngle = 90;
   int millingToothDepthSteps = 2;
@@ -24,6 +24,7 @@ class Helical {
   double seekRate = 200;
   double leadInOutOfTool = 0;
   double calculatedToothAngle = 90;
+  bool withLeadIn = false;
 
   gcodeSeek(arrayMovements) {
     var concatenate = StringBuffer();
@@ -69,7 +70,7 @@ class Helical {
     //Zero from the middle of the gear
     //double y0 = ((outsideDiameter + cutterDiameter) / 2);
     //Zero from the top of the gear
-    double y0 = ((outsideDiameter + cutterDiameter));
+    double y0 = outsideDiameter;
     double a0 = 360 / toothCount * toothNumber;
 
     var spindleAxis = workingAxis == WorkingAxis.XA ? "Z" : "X";
@@ -119,7 +120,7 @@ class Helical {
   }
 
   generateGcode() {
-    leadInOutOfTool = calculateLeadInOutOfTool(cutterDiameter, toothDepth);
+    // leadInOutOfTool = withLeadIn ? calculateLeadInOutOfTool(cutterDiameter, toothDepth) : 0;
     double helixAngle = (90 - leadAngle).abs();
     /* Pitch diameter (D) defined by:
     https://www.bostongear.com/-/media/Files/Literature/Brand/boston-gear/catalogs/p-1930-bg-sections/p-1930-bg_engineering-info-spur-gears.ashx

@@ -64,6 +64,8 @@ flutter:
   - assets/images/rightHand.svg
   - assets/images/spurGear.svg
   - assets/images/axes.svg
+  - assets/images/tooth_square.svg
+  - assets/images/tooth_rounded.svg
 
  
   # An image asset can refer to one or more resolution-specific "variants", see

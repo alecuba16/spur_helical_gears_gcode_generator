@@ -24,6 +24,8 @@ class AppBodyState extends State<AppBody> {
   TextEditingController textEditingController = TextEditingController();
   Helical helical = new Helical();
   GlobalKey<FormState> _form = GlobalKey<FormState>();
+  double axesIconSize = 200;
+
   Widget gcodeWidget(BuildContext context) {
     return Row(children: [
       Center(
@@ -146,68 +148,77 @@ class AppBodyState extends State<AppBody> {
           Row(
               //Row1
               mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      'Units:',
-                      style: new TextStyle(fontSize: 15.0),
-                    ),
-                    Column(children: [
-                      Container(
-                          color: helical.units == Units.metric
-                              ? Colors.greenAccent
-                              : null,
-                          child: Row(children: [
-                            Radio(
-                              value: Units.metric,
-                              groupValue: helical.units,
-                              onChanged: (val) {
-                                setState(() {
-                                  helical.units = Units.metric;
-                                  generatedGcodeData = "";
-                                });
-                              },
-                            ),
-                            Text(
-                              'Metric (mm)',
-                              style: new TextStyle(fontSize: 10.0),
-                            ),
-                          ])),
-                      Container(
-                          color: helical.units == Units.imperial
-                              ? Colors.greenAccent
-                              : null,
-                          child: Row(children: [
-                            Radio(
-                              value: Units.imperial,
-                              groupValue: helical.units,
-                              onChanged: (val) {
-                                setState(() {
-                                  helical.units = Units.imperial;
-                                  generatedGcodeData = "";
-                                });
-                              },
-                            ),
-                            Text(
-                              'Imperial (inch)',
-                              style: new TextStyle(fontSize: 10.0),
-                            ),
-                          ]))
-                    ])
-                  ],
-                ),
-                Row(children: [
+                Column(children: [
                   Text(
-                    'Working axis:',
+                    'Units:',
                     style: new TextStyle(fontSize: 15.0),
                   ),
-                  IconButton(
-                    icon: SvgPicture.asset('assets/images/axes.svg'),
-                    iconSize: 200,
-                    onPressed: () {},
-                  ),
+                  Container(
+                      color: helical.units == Units.metric
+                          ? Colors.greenAccent
+                          : null,
+                      child: Row(children: [
+                        Radio(
+                          value: Units.metric,
+                          groupValue: helical.units,
+                          onChanged: (val) {
+                            setState(() {
+                              helical.units = Units.metric;
+                              generatedGcodeData = "";
+                            });
+                          },
+                        ),
+                        Text(
+                          'Metric (mm)',
+                          style: new TextStyle(fontSize: 10.0),
+                        ),
+                      ])),
+                  Container(
+                      color: helical.units == Units.imperial
+                          ? Colors.greenAccent
+                          : null,
+                      child: Row(children: [
+                        Radio(
+                          value: Units.imperial,
+                          groupValue: helical.units,
+                          onChanged: (val) {
+                            setState(() {
+                              helical.units = Units.imperial;
+                              generatedGcodeData = "";
+                            });
+                          },
+                        ),
+                        Text(
+                          'Imperial (inch)',
+                          style: new TextStyle(fontSize: 10.0),
+                        ),
+                      ]))
+                ]),
+                Row(children: [
+                  Column(children: [
+                    Text(
+                      'Working axis (touch over to expand):',
+                      style: new TextStyle(fontSize: 15.0),
+                    ),
+                    MouseRegion(
+                        onEnter: (e) {
+                          setState(() {
+                            axesIconSize = 500;
+                          });
+                        },
+                        onExit: (e) {
+                          setState(() {
+                            axesIconSize = 200;
+                          });
+                        },
+                        child: IconButton(
+                          icon: SvgPicture.asset('assets/images/axes.svg'),
+                          iconSize: axesIconSize,
+                          onPressed: () {},
+                        ))
+                  ]),
                   Column(children: [
                     Container(
                         color: helical.workingAxis == WorkingAxis.XA
@@ -251,14 +262,13 @@ class AppBodyState extends State<AppBody> {
                         ]))
                   ]),
                   Padding(
-                      padding: EdgeInsets.fromLTRB(20, 0, 5, 0),
-                      child: Text(
-                        'Cut direction:',
-                        style: new TextStyle(fontSize: 15.0),
-                      )),
-                  Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 100, vertical: 0),
                       child: Column(children: <Widget>[
+                        Text(
+                          'Cut direction:',
+                          style: new TextStyle(fontSize: 15.0),
+                        ),
                         Container(
                             color: helical.cutFrom == 1
                                 ? Colors.greenAccent
@@ -313,14 +323,83 @@ class AppBodyState extends State<AppBody> {
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Column(children: [
-                      Text(
-                        'Gear Style:',
-                        style: new TextStyle(fontSize: 15.0),
-                      )
-                    ]),
+                    // Column(children: [
+                    //   Text(
+                    //     'Tooth face style:',
+                    //     style: new TextStyle(fontSize: 15.0),
+                    //   ),
+                    //   Container(
+                    //       color: helical.withLeadIn == false
+                    //           ? Colors.greenAccent
+                    //           : null,
+                    //       child: Row(children: [
+                    //         Radio(
+                    //           value: false,
+                    //           groupValue: helical.withLeadIn,
+                    //           onChanged: (val) {
+                    //             setState(() {
+                    //               helical.withLeadIn = false;
+                    //               generatedGcodeData = "";
+                    //             });
+                    //           },
+                    //         ),
+                    //         IconButton(
+                    //           icon: SvgPicture.asset(
+                    //               'assets/images/tooth_square.svg'),
+                    //           iconSize: 70,
+                    //           onPressed: () {
+                    //             setState(() {
+                    //               helical.withLeadIn = false;
+                    //               generatedGcodeData = "";
+                    //             });
+                    //           },
+                    //         ),
+                    //         Text(
+                    //           'Square',
+                    //           style: new TextStyle(fontSize: 10.0),
+                    //         ),
+                    //       ])),
+                    //   Container(
+                    //       color: helical.withLeadIn == true
+                    //           ? Colors.greenAccent
+                    //           : null,
+                    //       child: Row(
+                    //           mainAxisSize: MainAxisSize.max,
+                    //           mainAxisAlignment: MainAxisAlignment.start,
+                    //           children: [
+                    //             Radio(
+                    //               value: true,
+                    //               groupValue: helical.withLeadIn,
+                    //               onChanged: (val) {
+                    //                 setState(() {
+                    //                   helical.withLeadIn = true;
+                    //                   generatedGcodeData = "";
+                    //                 });
+                    //               },
+                    //             ),
+                    //             IconButton(
+                    //               icon: SvgPicture.asset(
+                    //                   'assets/images/tooth_rounded.svg'),
+                    //               iconSize: 70,
+                    //               onPressed: () {
+                    //                 setState(() {
+                    //                   helical.withLeadIn = true;
+                    //                   generatedGcodeData = "";
+                    //                 });
+                    //               },
+                    //             ),
+                    //             Text(
+                    //               'Curved',
+                    //               style: new TextStyle(fontSize: 10.0),
+                    //             ),
+                    //           ])),
+                    // ]),
                     Column(
                       children: [
+                        Text(
+                          'Gear Style:',
+                          style: new TextStyle(fontSize: 15.0),
+                        ),
                         Container(
                             color: helical.gearStyle == GearStyle.spur
                                 ? Colors.greenAccent
@@ -392,16 +471,11 @@ class AppBodyState extends State<AppBody> {
                     ),
                     if (helical.gearStyle == GearStyle.helical)
                       Column(children: [
-                        Container(
-                            width: 200,
-                            child: Text(
-                              'Helical gear rotation direction (Right/Left) hand:',
-                              textAlign: TextAlign.justify,
-                              style: new TextStyle(fontSize: 15.0),
-                            ))
-                      ]),
-                    if (helical.gearStyle == GearStyle.helical)
-                      Column(children: [
+                        Text(
+                          'Helical gear rotation direction (Right/Left) hand:',
+                          textAlign: TextAlign.justify,
+                          style: new TextStyle(fontSize: 15.0),
+                        ),
                         Column(children: [
                           Container(
                               color: helical.helicalGearRotationDirection ==
@@ -566,7 +640,8 @@ class AppBodyState extends State<AppBody> {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 0),
                             child: TextFormField(
-                              initialValue: helical.toothCount.toString(),
+                              initialValue:
+                                  helical.toothCount.toStringAsFixed(0),
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: "Number of tooths (u)",
@@ -593,7 +668,7 @@ class AppBodyState extends State<AppBody> {
                         padding:
                             EdgeInsets.symmetric(horizontal: 5, vertical: 0),
                         child: TextFormField(
-                          initialValue: helical.toothDepth.toString(),
+                          initialValue: helical.toothDepth.toStringAsFixed(3),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: "Tooth depth" +
@@ -629,7 +704,7 @@ class AppBodyState extends State<AppBody> {
                         padding:
                             EdgeInsets.symmetric(horizontal: 5, vertical: 0),
                         child: TextFormField(
-                          initialValue: helical.feedRate.toString(),
+                          initialValue: helical.feedRate.toStringAsFixed(3),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: "Feed rate",
@@ -651,7 +726,7 @@ class AppBodyState extends State<AppBody> {
                         padding:
                             EdgeInsets.symmetric(horizontal: 5, vertical: 0),
                         child: TextFormField(
-                          initialValue: helical.seekRate.toString(),
+                          initialValue: helical.seekRate.toStringAsFixed(3),
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: "Seek rate",
@@ -677,74 +752,85 @@ class AppBodyState extends State<AppBody> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
                     Flexible(
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                        child: TextFormField(
+                          initialValue:
+                              helical.safetyDistance.toStringAsFixed(3),
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: "Safety distance" +
+                                (Units.metric == helical.units
+                                    ? " (mm)"
+                                    : " (inch)"),
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d+')),
+                          ],
+                          onChanged: (val) {
+                            setState(() {
+                              helical.safetyDistance = double.parse(val);
+                              generatedGcodeData = "";
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    Flexible(
                         child: Padding(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 5, vertical: 0),
                             child: Column(children: <Widget>[
-                              TextFormField(
-                                  initialValue:
-                                      helical.cutterDiameter.toString(),
+                              DropdownButtonFormField(
                                   decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: "Cutter tool diameter" +
-                                        (Units.metric == helical.units
-                                            ? " (mm)"
-                                            : " (inch)"),
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'^\d+\.?\d{0,6}')),
-                                  ],
+                                      labelText:
+                                          'Tooth milling steps (toot depth in N passes):'),
+                                  items: List<int>.generate(10, (i) => i + 1)
+                                      .map((int value) {
+                                    return DropdownMenuItem<int>(
+                                      value: value,
+                                      child: new Text(value.toString()),
+                                    );
+                                  }).toList(),
+                                  value: helical.millingToothDepthSteps,
                                   onChanged: (val) {
                                     setState(() {
-                                      helical.cutterDiameter =
-                                          double.parse(val);
+                                      helical.millingToothDepthSteps =
+                                          int.parse(val.toString());
                                       generatedGcodeData = "";
                                     });
                                   })
                             ]))),
+                    // if (helical.withLeadIn == true)
+                    //   Flexible(
+                    //       child: Padding(
+                    //           padding: EdgeInsets.symmetric(
+                    //               horizontal: 5, vertical: 0),
+                    //           child: Column(children: <Widget>[
+                    //             TextFormField(
+                    //                 initialValue: helical.cutterDiameter
+                    //                     .toStringAsFixed(3),
+                    //                 decoration: InputDecoration(
+                    //                   border: OutlineInputBorder(),
+                    //                   labelText: "Cutter tool diameter" +
+                    //                       (Units.metric == helical.units
+                    //                           ? " (mm)"
+                    //                           : " (inch)"),
+                    //                 ),
+                    //                 inputFormatters: [
+                    //                   FilteringTextInputFormatter.allow(
+                    //                       RegExp(r'^\d+\.?\d{0,6}')),
+                    //                 ],
+                    //                 onChanged: (val) {
+                    //                   setState(() {
+                    //                     helical.cutterDiameter =
+                    //                         double.parse(val);
+                    //                     generatedGcodeData = "";
+                    //                   });
+                    //                 })
+                    //           ]))),
 
-                    // Flexible(
-                    //     child: Padding(
-                    //         padding: EdgeInsets.symmetric(
-                    //             horizontal: 5, vertical: 0),
-                    //         child: Column(children: <Widget>[
-                    //           TextFormField(
-                    //               initialValue:
-                    //                   helical.pitchDiameter.toStringAsFixed(3),
-                    //               decoration: InputDecoration(
-                    //                 border: OutlineInputBorder(),
-                    //                 labelText:
-                    //                     "Pitch diameter (autocalculated)" +
-                    //                         (Units.metric == helical.units
-                    //                             ? " (mm)"
-                    //                             : " (inch)"),
-                    //               ),
-                    //               keyboardType: TextInputType.numberWithOptions(
-                    //                   decimal: true),
-                    //               inputFormatters: [
-                    //                 FilteringTextInputFormatter.allow(
-                    //                     RegExp(r'^\d+\.?\d{0,6}')),
-                    //               ],
-                    //               validator: RangeValidator(
-                    //                   min: max(
-                    //                       0,
-                    //                       (helical.outsideDiameter -
-                    //                           (2 * helical.toothDepth))),
-                    //                   max: helical.outsideDiameter,
-                    //                   errorText: "Accepted values " +
-                    //                       (helical.outsideDiameter -
-                    //                               2 * helical.toothDepth)
-                    //                           .toString() +
-                    //                       " -> " +
-                    //                       helical.outsideDiameter.toString()),
-                    //               onChanged: (val) {
-                    //                 setState(() {
-                    //                   helical.pitchDiameter = double.parse(val);
-                    //                   generatedGcodeData = "";
-                    //                 });
-                    //               })
-                    //         ]))),
                     if (helical.gearStyle == GearStyle.helical)
                       Flexible(
                           child: Padding(
@@ -752,7 +838,8 @@ class AppBodyState extends State<AppBody> {
                                   horizontal: 5, vertical: 0),
                               child: Column(children: <Widget>[
                                 TextFormField(
-                                    initialValue: helical.leadAngle.toString(),
+                                    initialValue:
+                                        helical.leadAngle.toStringAsFixed(0),
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(),
                                       labelText: "Lead angle (º)",
@@ -775,34 +862,6 @@ class AppBodyState extends State<AppBody> {
                                       });
                                     })
                               ]))),
-                    Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                        child: Text(
-                          'Tooth milling steps (toot depth in N passes):',
-                          style: new TextStyle(fontSize: 15.0),
-                        )),
-                    Flexible(
-                        child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 0),
-                            child: Column(children: <Widget>[
-                              DropdownButton(
-                                  items: List<int>.generate(10, (i) => i + 1)
-                                      .map((int value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value,
-                                      child: new Text(value.toString()),
-                                    );
-                                  }).toList(),
-                                  value: helical.millingToothDepthSteps,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      helical.millingToothDepthSteps =
-                                          int.parse(val.toString());
-                                    });
-                                  })
-                            ]))),
                   ])),
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
@@ -821,12 +880,6 @@ class AppBodyState extends State<AppBody> {
                               setState(() {
                                 generatedGcodeData = helical.generateGcode();
                               });
-                              // If the form is valid, display a snackbar. In the real world,
-                              // you'd often call a server or save the information in a database.
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Generating Gcode...')),
-                              );
                             }
                             // Validate returns true if the form is valid, or false otherwise.
                           },
