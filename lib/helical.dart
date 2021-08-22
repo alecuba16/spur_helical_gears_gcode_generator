@@ -70,7 +70,8 @@ class Helical {
     //Zero from the middle of the gear
     //double y0 = ((outsideDiameter + cutterDiameter) / 2);
     //Zero from the top of the gear
-    double y0 = outsideDiameter;
+    //double y0 = outsideDiameter;
+    double y0 = 0;
     double a0 = 360 / toothCount * toothNumber;
 
     var spindleAxis = workingAxis == WorkingAxis.XA ? "Z" : "X";
@@ -158,19 +159,11 @@ class Helical {
     gcode += "G49 (Cancel cutter length offset)\n";
     gcode += "G90 (Absolute coordinates mode)\n";
     gcode += "G98 (Retract to initial Z)\n";
-    gcode += "G0 " +
-        seekRate.toStringAsFixed(0) +
-        " (Seek rate set to " +
-        seekRate.toStringAsFixed(0) +
-        ")\n";
-    gcode += "G1 " +
-        feedRate.toStringAsFixed(0) +
-        " (Feed rate set to " +
-        feedRate.toStringAsFixed(0) +
-        ")\n";
+    //gcode += "G0 " + seekRate.toStringAsFixed(0) + " (Seek rate set to " +seekRate.toStringAsFixed(0) +")\n";
+    //gcode += "G1 " + feedRate.toStringAsFixed(0) +" (Feed rate set to " +feedRate.toStringAsFixed(0) +     ")\n";
     gcode += "\n";
     gcode += "M3 (Spindle start)\n";
-    gcode += "G4 P4000 (Wait 4 seconds for the spindle start)\n";
+    //gcode += "G4 P4000 (Wait 4 seconds for the spindle start)\n";
     gcode += "\n";
 
     int currentTooth;

@@ -202,22 +202,13 @@ class AppBodyState extends State<AppBody> {
                       'Working axis (touch over to expand):',
                       style: new TextStyle(fontSize: 15.0),
                     ),
-                    MouseRegion(
-                        onEnter: (e) {
-                          setState(() {
-                            axesIconSize = 500;
-                          });
-                        },
-                        onExit: (e) {
-                          setState(() {
-                            axesIconSize = 200;
-                          });
-                        },
-                        child: IconButton(
-                          icon: SvgPicture.asset('assets/images/axes.svg'),
-                          iconSize: axesIconSize,
-                          onPressed: () {},
-                        ))
+                    IconButton(
+                      icon: SvgPicture.asset('assets/images/axes.svg'),
+                      iconSize: axesIconSize,
+                      onPressed: () {
+                        axesIconSize = axesIconSize == 500 ? 200 : 500;
+                      },
+                    )
                   ]),
                   Column(children: [
                     Container(
